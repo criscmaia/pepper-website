@@ -90,9 +90,11 @@
 			background-image: none;
 			border: 1px solid transparent;
 			border-radius: 4px;
-			width: 100%;
+			width: 40%;
+			margin: 2%;
 			text-transform: uppercase;
 			height: 23vh;
+			white-space: normal !important;
 		}
 		.btn.disabled,
 		.btn[disabled],
@@ -102,8 +104,9 @@
 			-webkit-box-shadow: none;
 			box-shadow: none;
 			opacity: .65;
-			background-color: pink;
+			background-color: black;
 		}
+		
 		.btn-default {
 			color: #333;
 			background-color: #fff;
@@ -114,6 +117,10 @@
 			background-color: #5cb85c;
 			border-color: #4cae4c;
 		}
+		.red-btn {
+			color: #fff;
+			background-color: red;
+		}
 	</style>
 </head>
 
@@ -121,9 +128,13 @@
 	<main class="body-container">
 		<div class="content">
 			<?php
-				// GETS JSON VALUES
 				$fileurl = "http://osferreiras.com.br/data/pepperData.json";
+			
+				// GETS JSON VALUES
 				$json = json_decode(file_get_contents($fileurl), true);
+				
+				$btnnames = array("start", "intro", "Matt recog", "Matt talk", "Stranger recog", "Save Matt", "Finish");
+				$btcounter = 0;
 
 				// CHECK IF VALUES NEED TO BE UPDATED
 				if(isset($_GET['value1']) && !empty($_GET['value1'])){
@@ -138,19 +149,51 @@
 				if(isset($_GET['value4']) && !empty($_GET['value4'])){
 					$json["value4"] = $_GET['value4'];
 				}
+				if(isset($_GET['value5']) && !empty($_GET['value5'])){
+					$json["value5"] = $_GET['value5'];
+				}
+				if(isset($_GET['value6']) && !empty($_GET['value6'])){
+					$json["value6"] = $_GET['value6'];
+				}
+				if(isset($_GET['value7']) && !empty($_GET['value7'])){
+					$json["value7"] = $_GET['value7'];
+				}
 
 				// ADDS VALUE BACK TO JSON
 				file_put_contents("/home/criscmai/public_html/osferreiras.com.br/data/pepperData.json",json_encode($json)) or print_r(error_get_last());
 
 				// DISPLAY BUTTONS
-				foreach ($json as $key => $value) {    
-					if ($value==0) {
-						echo "<button  class=\"btn btn-success\" onclick=\"location.href='http://osferreiras.com.br/pepper.php?".$key."=1'\" type=\"button\">Turn on ".$key."</button>";
-					} else {
-						echo "<button class=\"btn btn-default\" disabled onclick=\"location.href='http://osferreiras.com.br/pepper.php?value".$key."=1'\" type=\"button\">".$key." IS ON</button>";
+				$previous_value = 0;
+				$allenabled = false;									// all buttons are OFF
+				foreach ($json as $key => $value) {
+					if ($btcounter==0) {								// if 1st button
+						if ($value==0) {								// if 1st is ON
+							$allenabled = false;						// all others are OFF
+							echo "<button  class=\"btn btn-success\" onclick=\"location.href='http://osferreiras.com.br/pepper.php?".$key."=1'\" type=\"button\">".$btnnames[$btcounter]."</button>";
+						} else {										// if OFF
+							$allenabled = true;							// all others can be ON
+							echo "<button class=\"btn btn-default\" disabled onclick=\"location.href='http://osferreiras.com.br/pepper.php?value".$key."=1'\" type=\"button\">".$btnnames[$btcounter]."</button>";
+						}
+					} 
+					
+					if ($btcounter>0) {									// if NOT 1st
+						if($allenabled) {								// if CAN be ON
+							if ($previous_value==0) {					// if previous is ON, this CAN'T be ON
+								echo "<button class=\"btn btn-default\" disabled onclick=\"location.href='http://osferreiras.com.br/pepper.php?value".$key."=1'\" type=\"button\">".$btnnames[$btcounter]."</button>";
+							} else if ($value==0) {						// if this is ON
+								echo "<button  class=\"btn btn-success\" onclick=\"location.href='http://osferreiras.com.br/pepper.php?".$key."=1'\" type=\"button\">".$btnnames[$btcounter]."</button>";
+							} else {									// if this is OFF
+								echo "<button class=\"btn btn-default\" disabled onclick=\"location.href='http://osferreiras.com.br/pepper.php?value".$key."=1'\" type=\"button\">".$btnnames[$btcounter]."</button>";
+							}
+						} else {										// if this is OFF
+							echo "<button class=\"btn btn-default\" disabled onclick=\"location.href='http://osferreiras.com.br/pepper.php?value".$key."=1'\" type=\"button\">".$btnnames[$btcounter]."</button>";
+						}
 					}
+					$previous_value = $value;
+					$btcounter++;
 				}
 			?>
+			<button class="btn-default red-btn" type="button" onclick="location.href='http://osferreiras.com.br/resetpepper.php'">RESET</button>
 		</div>
 	</main>
 </body>
